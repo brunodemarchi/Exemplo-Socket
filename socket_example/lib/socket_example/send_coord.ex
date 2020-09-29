@@ -6,7 +6,6 @@ defmodule SocketExample.SendCoord do
   end
 
   def init(state) do
-    SocketExampleWeb.Endpoint.broadcast!("order_map_coords:lobby", "update", %{eae: "eae"})
     schedule_work()
     {:ok, state}
   end
