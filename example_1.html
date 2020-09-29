@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+<canvas id="canvarino" width="800" height="300" style="border:1px solid #d3d3d3;">
+    Your browser does not support the HTML5 canvas tag.</canvas>
+
+<h1>Status: <p style="display: inline" id="status_msg"></p></h1>
+<script>
+    const c = document.getElementById("canvarino");
+    const ctx = c.getContext("2d");
+    const offset = 50
+
+    function drawCircle(ctx, x, y, color){
+        ctx.beginPath();
+        ctx.arc(x, y, 20, 0, 2 * Math.PI);
+        ctx.fillStyle = color
+        ctx.fill();
+    }
+
+    function clearCanvas(ctx){
+        ctx.clearRect(0,0, 800, 300)
+    }
+
+    function drawCircles(arr){
+        clearCanvas(ctx)
+        arr.forEach(circle => {
+            drawCircle(ctx, circle.pos_x, circle.pos_y, circle.color)
+        })
+    }
+
+    drawCircle(ctx, offset + 400, offset + 0, "red")
+
+    clearCanvas(ctx)
+
+</script>
+
+<script>
+    const status_msg = document.getElementById("status_msg")
+    const socket = new WebSocket('ws://localhost:4000/socket/websocket/')
+    socket.onopen = () => {
+        socket.send(
+            JSON.stringify({
+                "topic": "order_map_coords:lobby",
+                "event": "phx_join",
+                "payload": {},
+                "ref": "ref"
+            })
+        )
+    }
+
+    socket.onmessage = (event) => {
+        const msg = JSON.parse(event.data)
+        const payload = msg.payload.data
+        if(payload){
+            status_msg.innerText = `recebido um pacote com ${payload.length} pedidos, atualizando o mapa.`
+            drawCircles(payload)
+        } else {
+            status_msg.innerText = "conectado com o socket, esperando updates";
+        }
+    }
+
+</script>
+</body>
+</html>
